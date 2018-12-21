@@ -2,10 +2,10 @@ from django.shortcuts import render, redirect
 from .forms import InputForm
 from .models import Customers
 
-from sklearn.externals import joblib
-import numpy as np
-
-model = joblib.load('demo_app/demo_model.pkl')
+# from sklearn.externals import joblib
+# import numpy as np
+ 
+# model = joblib.load('demo_app/demo_model.pkl')
 
 def index(request):
     return render(request, 'demo_app/index.html', {})
