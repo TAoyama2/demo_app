@@ -2,10 +2,10 @@ from django.shortcuts import render, redirect
 from .forms import InputForm
 from .models import Customers
 
-# from sklearn.externals import joblib
-# import numpy as np
- 
-# model = joblib.load('demo_app/demo_model.pkl')
+from sklearn.externals import joblib
+import numpy as np
+
+loaded_model = joblib.load('demo_app/demo_model.pkl')
 
 def index(request):
     return render(request, 'demo_app/index.html', {})
@@ -22,4 +22,45 @@ def input_form(request):
         return render(request, 'demo_app/input_form.html', {'form':form})
 
 def result(request):
-    return render(request, 'demo_app/result.html', {})
+    # DB からデータを取得
+    _data = Customers.objects.order_by('id').reverse().values_list \
+            ('limit_balance', 'sex', 'education', 'marriage', 'age',
+             'pay_0', 'pay_2', 'pay_3', 'pay_4', 'pay_5', 'pay_6',
+             'bill_amt_1', 'pay_amt_1', 'pay_amt_2', 'pay_amt_3',
+             'pay_amt_4', 'pay_amt_5', 'pay_amt_6')
+
+    x = np.array([_data[0]])
+    y = loaded_model.predict(x)
+    y_proba = loaded_model.predict_proba(x)
+    _y_proba = y_proba * 100
+
+    if y[0] == 0:
+        if y_proba[0][y[0]] >= 0.75:
+            comment = 'この方への貸出は危険です'
+        else:
+            comment = 'この方への貸出は要検討です'
+    else:
+        if y_proba[0][y[0]] >= 0.75:
+            comment = 'この方への貸出は全く問題ありません'
+        else:
+            comment = 'この方への貸出は問題ありません'
+
+    customer = Customers.objects.order_by('id').reverse()[0]
+    customer.result = y[0]
+    customer.proba = _y_proba[0][y[0]]
+    customer.comment = comment
+    customer.save()
+
+    return render(request, 'demo_app/result.html', {'y': y[0], 'y_proba': round(_y_proba[0][y[0]], 2), 'comment': comment})
+
+def history(request):
+    if request.method == 'POST':
+        d_id = request.POST
+        d_customer = Customers.objects.filter(id=d_id['d_id'])
+        d_customer.delete()
+        customers = Customers.objects.all()
+        return render(request, 'demo_app/history.html', {'customers':customers})
+
+    else:
+        customers = Customers.objects.all()
+        return render(request, 'demo_app/history.html', {'customers':customers})
