@@ -5,7 +5,10 @@ from .models import Customers
 from sklearn.externals import joblib
 import numpy as np
 
-loaded_model = joblib.load('demo_app/demo_model.pkl')
+# ローカル
+# loaded_model = joblib.load('demo_app/demo_model.pkl')
+# pythonanywhere
+loaded_model = joblib.load('/home/aoyama/aoyama.pythonanywhere.com/demo_app/demo_model.pkl')
 
 def index(request):
     return render(request, 'demo_app/index.html', {})
