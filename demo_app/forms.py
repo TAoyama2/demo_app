@@ -2,6 +2,8 @@ from django import forms
 from .models import Customers
 
 from django.forms.widgets import NumberInput
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 
 class RangeInput(NumberInput):
     input_type = 'range'
@@ -24,3 +26,12 @@ class InputForm(forms.ModelForm):
             'last_name':forms.TextInput(attrs={'placeholder':'last_name'}),
             'first_name':forms.TextInput(attrs={'placeholder':'first_name'}),
         }
+
+class SignUpForm(UserCreationForm):
+    first_name = forms.CharField(max_length=30, required=True, help_text='名前を入力してください')
+    last_name = forms.CharField(max_length=30, required=True, help_text='名字を入力してください')
+    email = forms.EmailField(max_length=254, help_text='有効なE-mailアドレス')
+
+    class Meta:
+        model = User
+        fields = ('username', 'last_name', 'first_name', 'email', 'password1', 'password2')
